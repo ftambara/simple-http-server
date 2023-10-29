@@ -6,6 +6,10 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 	w.Write([]byte("Hello World!"))
 }
 
@@ -20,8 +24,8 @@ func noteCreate(w http.ResponseWriter, r *http.Request) {
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
-	mux.HandleFunc("/notes/view/", noteView)
-	mux.HandleFunc("/notes/create/", noteCreate)
+	mux.HandleFunc("/notes/view", noteView)
+	mux.HandleFunc("/notes/create", noteCreate)
 
 	port := ":4000"
 	log.Printf("Starting server on %v", port)
