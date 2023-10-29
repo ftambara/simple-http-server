@@ -14,18 +14,26 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func noteView(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/notes/view/" {
+		http.NotFound(w, r)
+		return
+	}
 	w.Write([]byte("Showing a note"))
 }
 
 func noteCreate(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/notes/create/" {
+		http.NotFound(w, r)
+		return
+	}
 	w.Write([]byte("Creating a note... (don't wait for it)"))
 }
 
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
-	mux.HandleFunc("/notes/view", noteView)
-	mux.HandleFunc("/notes/create", noteCreate)
+	mux.HandleFunc("/notes/view/", noteView)
+	mux.HandleFunc("/notes/create/", noteCreate)
 
 	port := ":4000"
 	log.Printf("Starting server on %v", port)
