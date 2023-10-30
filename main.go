@@ -18,7 +18,8 @@ func noteView(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("Showing a note"))
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"body": "Building an HTTP server with Go!"}`))
 }
 
 func noteCreate(w http.ResponseWriter, r *http.Request) {
