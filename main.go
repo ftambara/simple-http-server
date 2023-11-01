@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -14,8 +16,16 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func noteView(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 0 {
+		http.NotFound(w, r)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"body": "Building an HTTP server with Go!"}`))
+	w.Write([]byte(fmt.Sprintf(
+		`{"id": "%v", "body": "Building an HTTP server with Go!"}`,
+		id,
+	)))
 }
 
 func noteCreate(w http.ResponseWriter, r *http.Request) {
