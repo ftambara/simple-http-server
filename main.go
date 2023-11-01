@@ -14,19 +14,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func noteView(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/notes/view/" {
-		http.NotFound(w, r)
-		return
-	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"body": "Building an HTTP server with Go!"}`))
 }
 
 func noteCreate(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/notes/create/" {
-		http.NotFound(w, r)
-		return
-	}
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -38,8 +30,8 @@ func noteCreate(w http.ResponseWriter, r *http.Request) {
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
-	mux.HandleFunc("/notes/view/", noteView)
-	mux.HandleFunc("/notes/create/", noteCreate)
+	mux.HandleFunc("/notes/view", noteView)
+	mux.HandleFunc("/notes/create", noteCreate)
 
 	port := ":4000"
 	log.Printf("Starting server on %v", port)
