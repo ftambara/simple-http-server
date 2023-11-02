@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -22,10 +21,7 @@ func noteView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(fmt.Sprintf(
-		`{"id": "%v", "body": "Building an HTTP server with Go!"}`,
-		id,
-	)))
+	fmt.Fprintf(w, `{"id": "%d ", "body": "Building an HTTP server with Go!"}`, id)
 }
 
 func noteCreate(w http.ResponseWriter, r *http.Request) {
@@ -35,18 +31,4 @@ func noteCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("Creating a note... (don't wait for it)"))
-}
-
-func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/notes/view", noteView)
-	mux.HandleFunc("/notes/create", noteCreate)
-
-	port := ":4000"
-	log.Printf("Starting server on %v", port)
-	err := http.ListenAndServe(port, mux)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
