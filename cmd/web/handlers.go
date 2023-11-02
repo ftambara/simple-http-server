@@ -18,13 +18,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	tmpl, err := template.ParseFiles("./ui/html/pages/home.tmpl.html")
+	files := []string{
+		"./ui/html/base.tmpl.html",
+		"./ui/html/pages/home.tmpl.html",
+	}
+	tmpl, err := template.ParseFiles(files...)
 	if err != nil {
 		printServerError(w, err)
 		return
 	}
 
-	err = tmpl.Execute(w, nil)
+	err = tmpl.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		printServerError(w, err)
 		return

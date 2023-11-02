@@ -1,0 +1,21 @@
+{{define "base"}}
+<!doctype html>
+<html lang='eng'>
+    <head>
+        <meta charset='utf-8'>
+        <title>{{template "title" .}}</title>
+    </head>
+    <body>
+        <header>
+            <h1><a href='/'>Notes</a></h1>
+        </header>
+        <main>
+            {{template "main" .}}
+        </main>
+        <footer>
+            See the project source at <a href='https://github.com/ftambara/simple-http-server'>GitHub</a>
+        </footer>
+    </body>
+</html>
+{{end}}
+
