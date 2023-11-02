@@ -2,16 +2,33 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 )
+
+func printServerError(w http.ResponseWriter, err error) {
+	log.Print(err.Error())
+	http.Error(w, "Internal Server Error", 500)
+}
 
 func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("Hello World!"))
+	tmpl, err := template.ParseFiles("./ui/html/pages/home.tmpl.html")
+	if err != nil {
+		printServerError(w, err)
+		return
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		printServerError(w, err)
+		return
+	}
 }
 
 func noteView(w http.ResponseWriter, r *http.Request) {
