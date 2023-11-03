@@ -1,0 +1,25 @@
+* {
+    box-sizing: border-box;
+    font-family: Helvetica, Arial, serif
+}
+
+html {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+html > * {
+    flex-grow: 1;
+}
+
+footer {
+    align-self: flex-end;
+    border-top: 1px solid black;
+    padding-top: .4rem;
+    padding-bottom: .4rem;
+    background: #F7F9FA;
+    height: 2rem;
+    font-size: 0.9rem;
+    text-align: center;
+}
