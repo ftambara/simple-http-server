@@ -12,7 +12,7 @@ type application struct {
 	infoLog  *log.Logger
 	errorLog *log.Logger
 
-	// Methods defined in ./handlers.go
+	// Methods defined in ./handlers.go and ./helpers.go
 }
 
 func main() {
