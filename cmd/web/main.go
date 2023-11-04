@@ -4,27 +4,46 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 )
+
+type application struct {
+	infoLog  *log.Logger
+	errorLog *log.Logger
+
+	// Methods defined in ./handlers.go
+}
 
 func main() {
 	port := flag.String("port", ":4000", "HTTP network address")
 
 	flag.Parse()
 
+	app := application{
+		log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
+		log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile),
+	}
+
 	mux := http.NewServeMux()
 
 	fileServer := http.FileServer(sanitizedFS{http.Dir("./ui/static/")})
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/notes/view", noteView)
-	mux.HandleFunc("/notes/create", noteCreate)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/notes/view", app.noteView)
+	mux.HandleFunc("/notes/create", app.noteCreate)
 
-	log.Printf("Starting server on %s", *port)
-	err := http.ListenAndServe(*port, mux)
+	srv := &http.Server{
+		Addr:     *port,
+		ErrorLog: app.errorLog,
+		Handler:  mux,
+	}
+
+	app.infoLog.Printf("Starting server on %s", *port)
+	err := srv.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		app.errorLog.Fatal(err)
 	}
 }
 
