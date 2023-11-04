@@ -19,13 +19,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 	tmpl, err := template.ParseFiles(files...)
 	if err != nil {
-		app.printServerError(w, err)
+		app.serverError(w, err)
 		return
 	}
 
 	err = tmpl.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		app.printServerError(w, err)
+		app.serverError(w, err)
 		return
 	}
 }

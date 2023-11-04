@@ -1,8 +1,11 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+)
 
-func (app *application) printServerError(w http.ResponseWriter, err error) {
+func (app *application) serverError(w http.ResponseWriter, err error) {
 	app.errorLog.Print(err.Error())
-	http.Error(w, "Internal Server Error", 500)
+	status := http.StatusInternalServerError
+	http.Error(w, http.StatusText(status), status)
 }
