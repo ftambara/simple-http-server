@@ -25,19 +25,10 @@ func main() {
 		log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 
-	mux := http.NewServeMux()
-
-	fileServer := http.FileServer(sanitizedFS{http.Dir("./ui/static/")})
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/notes/view", app.noteView)
-	mux.HandleFunc("/notes/create", app.noteCreate)
-
 	srv := &http.Server{
 		Addr:     *port,
 		ErrorLog: app.errorLog,
-		Handler:  mux,
+		Handler:  app.serveMux(),
 	}
 
 	app.infoLog.Printf("Starting server on %s", *port)
