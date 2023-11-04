@@ -1,12 +1,17 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"path/filepath"
 )
 
 func main() {
+	port := flag.String("port", ":4000", "HTTP network address")
+
+	flag.Parse()
+
 	mux := http.NewServeMux()
 
 	fileServer := http.FileServer(sanitizedFS{http.Dir("./ui/static/")})
@@ -16,9 +21,8 @@ func main() {
 	mux.HandleFunc("/notes/view", noteView)
 	mux.HandleFunc("/notes/create", noteCreate)
 
-	port := ":4000"
-	log.Printf("Starting server on %v", port)
-	err := http.ListenAndServe(port, mux)
+	log.Printf("Starting server on %s", *port)
+	err := http.ListenAndServe(*port, mux)
 	if err != nil {
 		log.Fatal(err)
 	}
