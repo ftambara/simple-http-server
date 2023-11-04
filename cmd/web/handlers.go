@@ -7,11 +7,6 @@ import (
 	"strconv"
 )
 
-func (app *application) printServerError(w http.ResponseWriter, err error) {
-	app.errorLog.Print(err.Error())
-	http.Error(w, "Internal Server Error", 500)
-}
-
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
