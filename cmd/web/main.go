@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type application struct {
@@ -16,7 +20,8 @@ type application struct {
 }
 
 func main() {
-	port := flag.String("port", ":4000", "HTTP network address")
+	port := *flag.String("port", ":4000", "HTTP network address")
+	dbUrl := os.Getenv("POSTGRES_URL")
 
 	flag.Parse()
 
@@ -26,13 +31,22 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:     *port,
+		Addr:     port,
 		ErrorLog: app.errorLog,
 		Handler:  app.serveMux(),
 	}
 
-	app.infoLog.Printf("Starting server on %s", *port)
-	err := srv.ListenAndServe()
+	app.infoLog.Printf("Connecting to database")
+	conn, err := pgxpool.New(context.Background(), dbUrl)
+	if err != nil {
+		app.errorLog.Fatal(err)
+	}
+	defer conn.Close()
+
+	fmt.Println(greeting)
+
+	app.infoLog.Printf("Starting server on %s", port)
+	err = srv.ListenAndServe()
 	if err != nil {
 		app.errorLog.Fatal(err)
 	}
