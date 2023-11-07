@@ -10,45 +10,56 @@ import (
 	"path/filepath"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"ftambara/simple-http-server/internal/models"
 )
 
 type application struct {
 	infoLog  *log.Logger
 	errorLog *log.Logger
 
-	// Methods defined in ./handlers.go and ./helpers.go
+	notes *models.NoteModel
 }
 
 func main() {
 	port := *flag.String("port", ":4000", "HTTP network address")
-	dbUrl := os.Getenv("POSTGRES_URL")
+
+	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_PORT"),
+		os.Getenv("POSTGRES_DB"),
+	)
 
 	flag.Parse()
 
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	infoLog.Printf("Connecting to database")
+	conn, err := pgxpool.New(context.Background(), dbUrl)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer conn.Close()
+
 	app := application{
-		log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
-		log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile),
+		errorLog: errorLog,
+		infoLog:  infoLog,
+		notes:    &models.NoteModel{Conn: conn},
 	}
 
 	srv := &http.Server{
 		Addr:     port,
-		ErrorLog: app.errorLog,
+		ErrorLog: errorLog,
 		Handler:  app.serveMux(),
 	}
 
-	app.infoLog.Printf("Connecting to database")
-	conn, err := pgxpool.New(context.Background(), dbUrl)
-	if err != nil {
-		app.errorLog.Fatal(err)
-	}
-	defer conn.Close()
-
-	fmt.Println(greeting)
-
-	app.infoLog.Printf("Starting server on %s", port)
+	infoLog.Printf("Starting server on %s", port)
 	err = srv.ListenAndServe()
 	if err != nil {
-		app.errorLog.Fatal(err)
+		errorLog.Fatal(err)
 	}
 }
 

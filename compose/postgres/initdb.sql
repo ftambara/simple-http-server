@@ -1,7 +1,3 @@
-CREATE USER docker;
-CREATE DATABASE notes;
-GRANT ALL PRIVILEGES ON DATABASE notes TO docker;
-
 CREATE TABLE notes (
     id  SERIAL PRIMARY KEY,
     title VARCHAR(100),
