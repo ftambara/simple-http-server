@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -37,7 +39,18 @@ func (app *application) noteView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"id": "%d ", "body": "Building an HTTP server with Go!"}`, id)
+
+	note, err := app.notes.Get(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			app.clientError(w, http.StatusNotFound)
+			return
+		} else {
+			app.serverError(w, err)
+		}
+	}
+
+	fmt.Fprintf(w, "%+v", note)
 }
 
 func (app *application) noteCreate(w http.ResponseWriter, r *http.Request) {

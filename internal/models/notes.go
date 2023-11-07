@@ -34,7 +34,18 @@ func (m *NoteModel) Insert(title, body string) (int, error) {
 }
 
 func (m *NoteModel) Get(id int) (*Note, error) {
-	return nil, nil
+	query := `SELECT id, title, body, created, modified
+	FROM notes
+	WHERE id=$1`
+
+	n := &Note{}
+
+	err := m.Conn.QueryRow(context.Background(), query, id).
+		Scan(&n.ID, &n.Title, &n.Body, &n.Created, &n.Modified)
+	if err != nil {
+		return nil, err
+	}
+	return n, nil
 }
 
 func (m *NoteModel) Latest(n int) ([]*Note, error) {
