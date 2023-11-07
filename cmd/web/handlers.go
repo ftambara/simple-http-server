@@ -46,5 +46,17 @@ func (app *application) noteCreate(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
-	w.Write([]byte("Creating a note... (don't wait for it)"))
+	title := "Go tips:"
+	body := `
+	- Keep it simple
+	- Use interfaces
+	`
+	id, err := app.notes.Insert(title, body)
+	if err != nil {
+		app.errorLog.Println(err)
+		app.clientError(w, http.StatusBadRequest)
+	}
+
+	w.Header().Set("Location", fmt.Sprintf("notes/view?id=%d", id))
+	app.respondOk(w, http.StatusCreated)
 }
