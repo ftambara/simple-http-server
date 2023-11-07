@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -49,5 +50,22 @@ func (m *NoteModel) Get(id int) (*Note, error) {
 }
 
 func (m *NoteModel) Latest(n int) ([]*Note, error) {
-	return nil, nil
+	query := `SELECT id, title, body, created, modified
+	    FROM notes
+	    ORDER BY modified DESC
+	    LIMIT $1`
+
+	// It's ok to ignore the error here, it will be available
+	// after rows are closed
+	rows, _ := m.Conn.Query(context.Background(), query, n)
+	notes, err := pgx.CollectRows(rows, pgx.RowToStructByName[Note])
+	if err != nil {
+		return nil, err
+	}
+	notesP := make([]*Note, len(notes))
+	for i := 0; i < len(notes); i++ {
+		notesP[i] = &notes[i]
+	}
+	return notesP, nil
+
 }

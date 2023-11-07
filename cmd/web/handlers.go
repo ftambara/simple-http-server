@@ -14,18 +14,26 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusNotFound)
 		return
 	}
+
+	notes, err := app.notes.Latest(10)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
 	files := []string{
 		"./ui/html/base.tmpl.html",
 		"./ui/html/partials/nav.tmpl.html",
+		"./ui/html/partials/notes.tmpl.html",
 		"./ui/html/pages/home.tmpl.html",
 	}
+
 	tmpl, err := template.ParseFiles(files...)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	err = tmpl.ExecuteTemplate(w, "base", nil)
+	err = tmpl.ExecuteTemplate(w, "base", notes)
 	if err != nil {
 		app.serverError(w, err)
 		return
