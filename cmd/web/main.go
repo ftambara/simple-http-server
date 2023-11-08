@@ -38,16 +38,16 @@ func main() {
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	infoLog.Printf("Connecting to database")
-	conn, err := pgxpool.New(context.Background(), dbUrl)
+	db, err := pgxpool.New(context.Background(), dbUrl)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-	defer conn.Close()
+	defer db.Close()
 
 	app := application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
-		notes:    &models.NoteModel{Conn: conn},
+		notes:    &models.NoteModel{DB: db},
 	}
 
 	srv := &http.Server{

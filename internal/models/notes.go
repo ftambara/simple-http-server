@@ -17,7 +17,7 @@ type Note struct {
 }
 
 type NoteModel struct {
-	Conn *pgxpool.Pool
+	DB *pgxpool.Pool
 }
 
 func (m *NoteModel) Insert(title, body string) (int, error) {
@@ -25,7 +25,7 @@ func (m *NoteModel) Insert(title, body string) (int, error) {
 	VALUES($1, $2, NOW(), NOW()) RETURNING id;`
 
 	var id int
-	err := m.Conn.QueryRow(context.Background(), query, title, body).Scan(&id)
+	err := m.DB.QueryRow(context.Background(), query, title, body).Scan(&id)
 
 	if err != nil {
 		return 0, err
@@ -41,7 +41,7 @@ func (m *NoteModel) Get(id int) (*Note, error) {
 
 	n := &Note{}
 
-	err := m.Conn.QueryRow(context.Background(), query, id).
+	err := m.DB.QueryRow(context.Background(), query, id).
 		Scan(&n.ID, &n.Title, &n.Body, &n.Created, &n.Modified)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (m *NoteModel) Latest(n int) ([]*Note, error) {
 
 	// It's ok to ignore the error here, it will be available
 	// after rows are closed
-	rows, _ := m.Conn.Query(context.Background(), query, n)
+	rows, _ := m.DB.Query(context.Background(), query, n)
 	notes, err := pgx.CollectRows(rows, pgx.RowToStructByName[Note])
 	if err != nil {
 		return nil, err
