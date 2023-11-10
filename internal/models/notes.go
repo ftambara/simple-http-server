@@ -1,11 +1,8 @@
 package models
 
 import (
-	"context"
+	"database/sql"
 	"time"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Note struct {
@@ -17,15 +14,15 @@ type Note struct {
 }
 
 type NoteModel struct {
-	DB *pgxpool.Pool
+	DB *sql.DB
 }
 
 func (m *NoteModel) Insert(title, body string) (int, error) {
 	query := `INSERT INTO notes (title, body, created, modified)
-	VALUES($1, $2, NOW(), NOW()) RETURNING id;`
+	    VALUES($1, $2, NOW(), NOW()) RETURNING id;`
 
 	var id int
-	err := m.DB.QueryRow(context.Background(), query, title, body).Scan(&id)
+	err := m.DB.QueryRow(query, title, body).Scan(&id)
 
 	if err != nil {
 		return 0, err
@@ -36,12 +33,12 @@ func (m *NoteModel) Insert(title, body string) (int, error) {
 
 func (m *NoteModel) Get(id int) (*Note, error) {
 	query := `SELECT id, title, body, created, modified
-	FROM notes
-	WHERE id=$1`
+	    FROM notes
+	    WHERE id=$1`
 
 	n := &Note{}
 
-	err := m.DB.QueryRow(context.Background(), query, id).
+	err := m.DB.QueryRow(query, id).
 		Scan(&n.ID, &n.Title, &n.Body, &n.Created, &n.Modified)
 	if err != nil {
 		return nil, err
@@ -57,15 +54,29 @@ func (m *NoteModel) Latest(n int) ([]*Note, error) {
 
 	// It's ok to ignore the error here, it will be available
 	// after rows are closed
-	rows, _ := m.DB.Query(context.Background(), query, n)
-	notes, err := pgx.CollectRows(rows, pgx.RowToStructByName[Note])
+	rows, err := m.DB.Query(query, n)
 	if err != nil {
 		return nil, err
 	}
-	notesP := make([]*Note, len(notes))
-	for i := 0; i < len(notes); i++ {
-		notesP[i] = &notes[i]
+	defer rows.Close()
+	var notes []*Note
+	for i := 0; rows.Next(); i++ {
+		var note Note
+		err := rows.Scan(
+			&note.ID,
+			&note.Title,
+			&note.Body,
+			&note.Created,
+			&note.Modified,
+		)
+		if err != nil {
+			return nil, err
+		}
+		notes = append(notes, &note)
 	}
-	return notesP, nil
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return notes, nil
 
 }

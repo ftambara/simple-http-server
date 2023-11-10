@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 
 	"ftambara/simple-http-server/internal/models"
 )
@@ -38,10 +39,12 @@ func main() {
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	infoLog.Printf("Connecting to database")
-	db, err := pgxpool.New(context.Background(), dbUrl)
+	pool, err := pgxpool.New(context.Background(), dbUrl)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+
+	db := stdlib.OpenDBFromPool(pool)
 	defer db.Close()
 
 	app := application{
