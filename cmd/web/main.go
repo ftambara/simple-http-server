@@ -45,6 +45,9 @@ func main() {
 	}
 
 	db := stdlib.OpenDBFromPool(pool)
+	if err = db.Ping(); err != nil {
+		errorLog.Fatal(err)
+	}
 	defer db.Close()
 
 	app := application{
